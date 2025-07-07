@@ -13,6 +13,15 @@ interface Transaction {
   date: string;
 }
 
+interface Category {
+  _id: string;
+  name: string;
+  type: 'income' | 'expense';
+  color: string;
+  icon: string;
+  isDefault: boolean;
+}
+
 const Transactions: React.FC = () => {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [loading, setLoading] = useState(true);
@@ -24,6 +33,17 @@ const Transactions: React.FC = () => {
     description: '',
     date: new Date().toISOString().split('T')[0]
   });
+  const [editingTransaction, setEditingTransaction] = useState<Transaction | null>(null);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [filters, setFilters] = useState({
+    type: '',
+    category: '',
+    startDate: '',
+    endDate: '',
+    searchText: ''
+  });
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage] = useState(10);
   const [searchParams] = useSearchParams();
   const { isAuthenticated } = useAuth();
   const navigate = useNavigate();
@@ -39,12 +59,32 @@ const Transactions: React.FC = () => {
     }
 
     fetchTransactions();
-  }, [isAuthenticated, navigate, searchParams]);
+    fetchCategories();
+  }, [isAuthenticated, navigate, searchParams, filters]);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [filters]);
 
   const fetchTransactions = async () => {
     try {
-      const response = await axios.get('http://localhost:8000/api/transactions');
-      setTransactions(response.data);
+      const params = new URLSearchParams();
+      if (filters.type) params.append('type', filters.type);
+      if (filters.category) params.append('category', filters.category);
+      if (filters.startDate) params.append('startDate', filters.startDate);
+      if (filters.endDate) params.append('endDate', filters.endDate);
+      
+      const response = await axios.get(`http://localhost:8000/api/transactions?${params}`);
+      let filteredTransactions = response.data;
+      
+      if (filters.searchText) {
+        filteredTransactions = filteredTransactions.filter((transaction: Transaction) =>
+          transaction.description.toLowerCase().includes(filters.searchText.toLowerCase()) ||
+          transaction.category.toLowerCase().includes(filters.searchText.toLowerCase())
+        );
+      }
+      
+      setTransactions(filteredTransactions);
     } catch (error) {
       console.error('Failed to fetch transactions:', error);
     } finally {
@@ -52,14 +92,31 @@ const Transactions: React.FC = () => {
     }
   };
 
+  const fetchCategories = async () => {
+    try {
+      const response = await axios.get('http://localhost:8000/api/categories');
+      setCategories(response.data);
+    } catch (error) {
+      console.error('Failed to fetch categories:', error);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await axios.post('http://localhost:8000/api/transactions', {
-        ...formData,
-        amount: parseFloat(formData.amount)
-      });
+      if (editingTransaction) {
+        await axios.put(`http://localhost:8000/api/transactions/${editingTransaction._id}`, {
+          ...formData,
+          amount: parseFloat(formData.amount)
+        });
+      } else {
+        await axios.post('http://localhost:8000/api/transactions', {
+          ...formData,
+          amount: parseFloat(formData.amount)
+        });
+      }
       setShowForm(false);
+      setEditingTransaction(null);
       setFormData({
         type: 'expense',
         amount: '',
@@ -69,8 +126,20 @@ const Transactions: React.FC = () => {
       });
       fetchTransactions();
     } catch (error) {
-      console.error('Failed to create transaction:', error);
+      console.error('Failed to save transaction:', error);
     }
+  };
+
+  const handleEdit = (transaction: Transaction) => {
+    setEditingTransaction(transaction);
+    setFormData({
+      type: transaction.type,
+      amount: transaction.amount.toString(),
+      category: transaction.category,
+      description: transaction.description,
+      date: transaction.date.split('T')[0]
+    });
+    setShowForm(true);
   };
 
   const handleDelete = async (id: string) => {
@@ -82,6 +151,15 @@ const Transactions: React.FC = () => {
         console.error('Failed to delete transaction:', error);
       }
     }
+  };
+
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentTransactions = transactions.slice(indexOfFirstItem, indexOfLastItem);
+  const totalPages = Math.ceil(transactions.length / itemsPerPage);
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
   };
 
   if (loading) {
@@ -98,10 +176,110 @@ const Transactions: React.FC = () => {
           </button>
         </div>
 
+        <div className="filters-section">
+          <div className="filter-row">
+            <div className="filter-group">
+              <label>검색</label>
+              <input
+                type="text"
+                placeholder="설명이나 카테고리 검색"
+                value={filters.searchText}
+                onChange={(e) => setFilters({...filters, searchText: e.target.value})}
+              />
+            </div>
+            <div className="filter-group">
+              <label>종류</label>
+              <select
+                value={filters.type}
+                onChange={(e) => setFilters({...filters, type: e.target.value})}
+              >
+                <option value="">전체</option>
+                <option value="income">수입</option>
+                <option value="expense">지출</option>
+              </select>
+            </div>
+            <div className="filter-group">
+              <label>카테고리</label>
+              <select
+                value={filters.category}
+                onChange={(e) => setFilters({...filters, category: e.target.value})}
+              >
+                <option value="">전체</option>
+                {categories.map(category => (
+                  <option key={category._id} value={category.name}>
+                    {category.icon} {category.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+          <div className="filter-row">
+            <div className="filter-group">
+              <label>시작일</label>
+              <input
+                type="date"
+                value={filters.startDate}
+                onChange={(e) => setFilters({...filters, startDate: e.target.value})}
+              />
+            </div>
+            <div className="filter-group">
+              <label>종료일</label>
+              <input
+                type="date"
+                value={filters.endDate}
+                onChange={(e) => setFilters({...filters, endDate: e.target.value})}
+              />
+            </div>
+            <div className="filter-group quick-filters">
+              <label>빠른 필터</label>
+              <div className="quick-filter-buttons">
+                <button
+                  onClick={() => {
+                    const now = new Date();
+                    setFilters({
+                      ...filters,
+                      startDate: new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split('T')[0],
+                      endDate: new Date(now.getFullYear(), now.getMonth() + 1, 0).toISOString().split('T')[0]
+                    });
+                  }}
+                  className="quick-filter-btn"
+                >
+                  이번달
+                </button>
+                <button
+                  onClick={() => {
+                    const now = new Date();
+                    setFilters({
+                      ...filters,
+                      startDate: new Date(now.getFullYear(), 0, 1).toISOString().split('T')[0],
+                      endDate: new Date(now.getFullYear(), 11, 31).toISOString().split('T')[0]
+                    });
+                  }}
+                  className="quick-filter-btn"
+                >
+                  올해
+                </button>
+                <button
+                  onClick={() => setFilters({
+                    type: '',
+                    category: '',
+                    startDate: '',
+                    endDate: '',
+                    searchText: ''
+                  })}
+                  className="quick-filter-btn clear"
+                >
+                  초기화
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
         {showForm && (
           <div className="transaction-form-overlay">
             <div className="transaction-form">
-              <h2>새 거래 추가</h2>
+              <h2>{editingTransaction ? '거래 수정' : '새 거래 추가'}</h2>
               <form onSubmit={handleSubmit}>
                 <div className="form-group">
                   <label>종류</label>
@@ -126,13 +304,21 @@ const Transactions: React.FC = () => {
                 
                 <div className="form-group">
                   <label>카테고리</label>
-                  <input
-                    type="text"
+                  <select
                     value={formData.category}
                     onChange={(e) => setFormData({...formData, category: e.target.value})}
-                    placeholder="예: 식비, 교통비, 급여 등"
                     required
-                  />
+                  >
+                    <option value="">카테고리 선택</option>
+                    {categories
+                      .filter(cat => cat.type === formData.type)
+                      .map(category => (
+                        <option key={category._id} value={category.name}>
+                          {category.icon} {category.name}
+                        </option>
+                      ))
+                    }
+                  </select>
                 </div>
                 
                 <div className="form-group">
@@ -157,8 +343,13 @@ const Transactions: React.FC = () => {
                 </div>
                 
                 <div className="form-actions">
-                  <button type="submit" className="submit-btn">추가</button>
-                  <button type="button" onClick={() => setShowForm(false)} className="cancel-btn">
+                  <button type="submit" className="submit-btn">
+                    {editingTransaction ? '수정' : '추가'}
+                  </button>
+                  <button type="button" onClick={() => {
+                    setShowForm(false);
+                    setEditingTransaction(null);
+                  }} className="cancel-btn">
                     취소
                   </button>
                 </div>
@@ -176,30 +367,70 @@ const Transactions: React.FC = () => {
               </button>
             </div>
           ) : (
-            transactions.map((transaction) => (
-              <div key={transaction._id} className={`transaction-item ${transaction.type}`}>
-                <div className="transaction-info">
-                  <div className="transaction-main">
-                    <span className="transaction-category">{transaction.category}</span>
-                    <span className="transaction-description">{transaction.description}</span>
+            <>
+              {currentTransactions.map((transaction) => (
+                <div key={transaction._id} className={`transaction-item ${transaction.type}`}>
+                  <div className="transaction-info">
+                    <div className="transaction-main">
+                      <span className="transaction-category">{transaction.category}</span>
+                      <span className="transaction-description">{transaction.description}</span>
+                    </div>
+                    <div className="transaction-details">
+                      <span className="transaction-date">
+                        {new Date(transaction.date).toLocaleDateString('ko-KR')}
+                      </span>
+                      <span className={`transaction-amount ${transaction.type}`}>
+                        {transaction.type === 'income' ? '+' : '-'}₩{transaction.amount.toLocaleString()}
+                      </span>
+                    </div>
                   </div>
-                  <div className="transaction-details">
-                    <span className="transaction-date">
-                      {new Date(transaction.date).toLocaleDateString('ko-KR')}
-                    </span>
-                    <span className={`transaction-amount ${transaction.type}`}>
-                      {transaction.type === 'income' ? '+' : '-'}₩{transaction.amount.toLocaleString()}
-                    </span>
+                  <div className="transaction-actions">
+                    <button 
+                      onClick={() => handleEdit(transaction)}
+                      className="edit-btn"
+                    >
+                      수정
+                    </button>
+                    <button 
+                      onClick={() => handleDelete(transaction._id)}
+                      className="delete-btn"
+                    >
+                      삭제
+                    </button>
                   </div>
                 </div>
-                <button 
-                  onClick={() => handleDelete(transaction._id)}
-                  className="delete-btn"
-                >
-                  삭제
-                </button>
-              </div>
-            ))
+              ))}
+              
+              {totalPages > 1 && (
+                <div className="pagination">
+                  <button 
+                    onClick={() => handlePageChange(currentPage - 1)}
+                    disabled={currentPage === 1}
+                    className="pagination-btn"
+                  >
+                    이전
+                  </button>
+                  
+                  {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
+                    <button
+                      key={page}
+                      onClick={() => handlePageChange(page)}
+                      className={`pagination-btn ${currentPage === page ? 'active' : ''}`}
+                    >
+                      {page}
+                    </button>
+                  ))}
+                  
+                  <button 
+                    onClick={() => handlePageChange(currentPage + 1)}
+                    disabled={currentPage === totalPages}
+                    className="pagination-btn"
+                  >
+                    다음
+                  </button>
+                </div>
+              )}
+            </>
           )}
         </div>
       </div>

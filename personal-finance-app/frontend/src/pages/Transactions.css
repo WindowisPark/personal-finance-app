@@ -191,6 +191,26 @@
   color: #e74c3c;
 }
 
+.transaction-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.edit-btn {
+  background-color: #3498db;
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.875rem;
+  transition: background-color 0.3s;
+}
+
+.edit-btn:hover {
+  background-color: #2980b9;
+}
+
 .delete-btn {
   background-color: #e74c3c;
   color: white;
@@ -224,4 +244,147 @@
   height: 50vh;
   font-size: 1.2rem;
   color: #7f8c8d;
+}
+
+.filters-section {
+  background: white;
+  border-radius: 8px;
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.filter-row {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.filter-row:last-child {
+  margin-bottom: 0;
+}
+
+.filter-group {
+  flex: 1;
+  min-width: 200px;
+}
+
+.filter-group label {
+  display: block;
+  margin-bottom: 0.5rem;
+  color: #2c3e50;
+  font-weight: 500;
+  font-size: 0.875rem;
+}
+
+.filter-group input,
+.filter-group select {
+  width: 100%;
+  padding: 0.5rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 0.875rem;
+}
+
+.filter-group input:focus,
+.filter-group select:focus {
+  outline: none;
+  border-color: #3498db;
+}
+
+.quick-filters {
+  flex: 1.5;
+}
+
+.quick-filter-buttons {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.quick-filter-btn {
+  padding: 0.5rem 1rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  background: white;
+  cursor: pointer;
+  font-size: 0.875rem;
+  transition: all 0.3s;
+}
+
+.quick-filter-btn:hover {
+  background-color: #f8f9fa;
+  border-color: #3498db;
+}
+
+.quick-filter-btn.clear {
+  background-color: #e74c3c;
+  color: white;
+  border-color: #e74c3c;
+}
+
+.quick-filter-btn.clear:hover {
+  background-color: #c0392b;
+}
+
+@media (max-width: 768px) {
+  .filter-row {
+    flex-direction: column;
+  }
+  
+  .filter-group {
+    min-width: auto;
+  }
+  
+  .quick-filter-buttons {
+    flex-wrap: wrap;
+  }
+}
+
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 2rem;
+  padding: 1rem 0;
+}
+
+.pagination-btn {
+  padding: 0.5rem 1rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  background: white;
+  cursor: pointer;
+  font-size: 0.875rem;
+  transition: all 0.3s;
+  min-width: 40px;
+}
+
+.pagination-btn:hover:not(:disabled) {
+  background-color: #f8f9fa;
+  border-color: #3498db;
+}
+
+.pagination-btn.active {
+  background-color: #3498db;
+  color: white;
+  border-color: #3498db;
+}
+
+.pagination-btn:disabled {
+  background-color: #f8f9fa;
+  color: #bdc3c7;
+  cursor: not-allowed;
+  border-color: #ecf0f1;
+}
+
+@media (max-width: 480px) {
+  .pagination {
+    flex-wrap: wrap;
+  }
+  
+  .pagination-btn {
+    min-width: 35px;
+    padding: 0.4rem 0.8rem;
+  }
 }
