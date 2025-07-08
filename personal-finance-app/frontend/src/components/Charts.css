@@ -1,0 +1,117 @@
+.chart-container {
+  background: white;
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 20px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.chart-container h3 {
+  margin: 0 0 20px 0;
+  color: #333;
+  font-size: 1.2em;
+  font-weight: 600;
+  text-align: center;
+}
+
+.chart-tooltip {
+  background: rgba(255, 255, 255, 0.95);
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  padding: 10px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.tooltip-label {
+  font-weight: bold;
+  margin-bottom: 5px;
+  color: #333;
+}
+
+.chart-tooltip p {
+  margin: 2px 0;
+  font-size: 14px;
+}
+
+.charts-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 20px;
+  margin-top: 20px;
+}
+
+.chart-controls {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.chart-control {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.chart-control label {
+  font-weight: 500;
+  color: #555;
+}
+
+.chart-control select {
+  padding: 5px 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+/* 모바일 최적화 */
+@media (max-width: 768px) {
+  .chart-container {
+    padding: 15px;
+    margin-bottom: 15px;
+  }
+  
+  .chart-container h3 {
+    font-size: 1.1em;
+  }
+  
+  .chart-controls {
+    flex-direction: column;
+    gap: 10px;
+  }
+  
+  .chart-control {
+    width: 100%;
+  }
+  
+  .chart-control select {
+    width: 100%;
+  }
+}
+
+@media (min-width: 768px) {
+  .charts-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (min-width: 1200px) {
+  .charts-grid {
+    grid-template-columns: 2fr 1fr;
+  }
+}
+
+/* 터치 친화적 스타일 */
+@media (hover: none) and (pointer: coarse) {
+  .chart-container {
+    padding: 20px;
+  }
+  
+  .chart-controls button,
+  .chart-controls select {
+    min-height: 44px;
+    font-size: 16px;
+  }
+}

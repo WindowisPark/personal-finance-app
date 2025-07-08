@@ -1,0 +1,110 @@
+.chart-skeleton {
+  background: white;
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 20px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.chart-skeleton-header {
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.chart-skeleton-content {
+  height: 400px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Bar Chart Skeleton */
+.chart-skeleton-bars {
+  display: flex;
+  align-items: flex-end;
+  gap: 10px;
+  width: 100%;
+  height: 300px;
+  padding: 0 20px;
+}
+
+.chart-skeleton-bar {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  height: 100%;
+  justify-content: flex-end;
+}
+
+.chart-skeleton-bar-label {
+  margin-top: 8px;
+  width: 100%;
+  text-align: center;
+}
+
+/* Line Chart Skeleton */
+.chart-skeleton-line {
+  width: 100%;
+  height: 300px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Pie Chart Skeleton */
+.chart-skeleton-pie {
+  display: flex;
+  align-items: center;
+  gap: 40px;
+  width: 100%;
+  justify-content: center;
+}
+
+.chart-skeleton-pie-chart {
+  flex-shrink: 0;
+}
+
+.chart-skeleton-pie-legend {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.chart-skeleton-pie-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* 다크모드 대응 */
+@media (prefers-color-scheme: dark) {
+  .chart-skeleton {
+    background: #2d2d2d;
+  }
+  
+  .chart-skeleton-line svg line {
+    stroke: #404040;
+  }
+  
+  .chart-skeleton-line svg path {
+    stroke: #404040;
+  }
+  
+  .chart-skeleton-line svg circle {
+    fill: #404040;
+  }
+}
+
+/* 모바일 대응 */
+@media (max-width: 768px) {
+  .chart-skeleton-pie {
+    flex-direction: column;
+    gap: 20px;
+  }
+  
+  .chart-skeleton-bars {
+    padding: 0 10px;
+    gap: 5px;
+  }
+}

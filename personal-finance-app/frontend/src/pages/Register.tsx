@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { useToast } from '../contexts/ToastContext';
 import './Auth.css';
 
 const Register: React.FC = () => {
@@ -13,18 +14,31 @@ const Register: React.FC = () => {
   
   const { register } = useAuth();
   const navigate = useNavigate();
+  const { addToast } = useToast();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
 
     if (password !== confirmPassword) {
-      setError('비밀번호가 일치하지 않습니다.');
+      const errorMessage = '비밀번호가 일치하지 않습니다.';
+      setError(errorMessage);
+      addToast({
+        type: 'error',
+        title: '입력 오류',
+        message: errorMessage
+      });
       return;
     }
 
     if (password.length < 6) {
-      setError('비밀번호는 최소 6자 이상이어야 합니다.');
+      const errorMessage = '비밀번호는 최소 6자 이상이어야 합니다.';
+      setError(errorMessage);
+      addToast({
+        type: 'error',
+        title: '입력 오류',
+        message: errorMessage
+      });
       return;
     }
 
@@ -32,9 +46,20 @@ const Register: React.FC = () => {
 
     try {
       await register(username, email, password);
+      addToast({
+        type: 'success',
+        title: '회원가입 성공',
+        message: `${username}님, 환영합니다!`
+      });
       navigate('/dashboard');
     } catch (error: any) {
-      setError(error.response?.data?.message || '회원가입에 실패했습니다.');
+      const errorMessage = error.response?.data?.message || '회원가입에 실패했습니다.';
+      setError(errorMessage);
+      addToast({
+        type: 'error',
+        title: '회원가입 실패',
+        message: errorMessage
+      });
     } finally {
       setIsLoading(false);
     }
